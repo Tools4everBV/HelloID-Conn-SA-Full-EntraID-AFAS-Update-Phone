@@ -50,7 +50,7 @@
 _HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone_ is a template designed for use with HelloID Service Automation (SA) Delegated Forms. It can be imported into HelloID and customized according to your requirements. 
 
 By using this delegated form, you can update the mobile phone and business phone in Entra ID and AFAS Profit. The following options are available:
- 1. Search and select the Entra ID user
+ 1. Search and select the Entra ID user
  2. Enter new values for the following Entra ID account attributes: mobile phone and business phone
  3. The entered mobile phone and business phone are validated
  4. Entra ID account [mobile phone and business phone] and AFAS employee [TeNr and MbNr] attributes are updated with new values
