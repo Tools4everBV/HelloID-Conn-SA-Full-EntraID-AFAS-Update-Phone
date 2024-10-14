@@ -150,9 +150,7 @@ catch {
 function Resolve-AFASErrorMessage {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory,
-            ValueFromPipeline
-        )]
+        [Parameter(ValueFromPipeline)]
         [object]$ErrorObject
     )
     process {
