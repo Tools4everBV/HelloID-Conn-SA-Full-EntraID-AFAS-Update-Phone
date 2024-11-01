@@ -1,7 +1,7 @@
 #######################################################################
-# Template: RHo HelloID SA Delegated form task
+# Template: HelloID SA Delegated form task
 # Name:     EntraID-AFAS-account-update-phone
-# Date:     12-09-2024
+# Date:     01-11-2024
 #######################################################################
 
 # For basic information about delegated form tasks see:
@@ -11,8 +11,9 @@
 # https://docs.helloid.com/en/service-automation/service-automation-variables/service-automation-variable-reference.html
 
 #region init
-# Set TLS to accept TLS, TLS 1.1 and TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
+
+# Enable TLS1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
 
 $VerbosePreference = "SilentlyContinue"
 $InformationPreference = "Continue"
@@ -83,10 +84,10 @@ try {
     }
 
     if ([string]::IsNullOrEmpty($account.mobilePhone)) {
-        $account.mobilePhone = ' '
+        $account.mobilePhone = $null
     }
     if ([string]::IsNullOrEmpty($account.businessPhones)) {
-        $account.businessPhones = @(' ')
+        $account.businessPhones = @()
     }
 
     $baseUri = "https://login.microsoftonline.com/"

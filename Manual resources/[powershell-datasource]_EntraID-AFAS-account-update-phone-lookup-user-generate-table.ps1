@@ -1,7 +1,7 @@
 #######################################################################
-# Template: RHo HelloID SA Powershell data source
+# Template: HelloID SA Powershell data source
 # Name:     EntraID-AFAS-account-update-phone-lookup-user-generate-table
-# Date:     12-09-2024
+# Date:     01-11-2024
 #######################################################################
 
 # For basic information about powershell data sources see:
@@ -12,8 +12,8 @@
 
 #region init
 
-# Set TLS to accept TLS, TLS 1.1 and TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
+# Enable TLS1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
 
 $VerbosePreference = "SilentlyContinue"
 $InformationPreference = "Continue"
@@ -114,17 +114,6 @@ try {
         
     if ($resultCount -gt 0) {
         foreach ($user in $users) {
-            # trim ' ' to '' to prevent mistakes when editing
-            $mobilePhone = $user.MobilePhone
-            if ($mobilePhone -eq ' ') {
-                $mobilePhone = ''
-            }
-            
-            $businessPhones = $user.businessPhones[0]
-            if ($businessPhones -eq ' ') {
-                $businessPhones = ''
-            }
-
             $returnObject = @{
                 Id                = $user.Id
                 UserPrincipalName = $user.UserPrincipalName
@@ -133,8 +122,8 @@ try {
                 Department        = $user.Department
                 Title             = $user.JobTitle
                 Company           = $user.CompanyName
-                BusinessPhones    = $businessPhones
-                MobilePhone       = $mobilePhone
+                BusinessPhones    = $user.BusinessPhones[0]
+                MobilePhone       = $user.MobilePhone
             }
             Write-Output $returnObject
         }
