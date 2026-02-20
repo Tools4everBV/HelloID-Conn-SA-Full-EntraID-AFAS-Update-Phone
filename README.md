@@ -1,103 +1,101 @@
 # HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone
 
-> [!IMPORTANT]
-> This repository contains the connector and configuration code only. The implementer is responsible for acquiring the connection details such as username, password, certificate, etc. You might even need to sign a contract or agreement with the supplier before implementing this connector. Please contact the client's application manager to coordinate the connector requirements.
+| :information_source: Information |
+| :------------------------------- |
+| This repository contains the connector and configuration code only. The implementer is responsible for acquiring the connection details such as username, password, certificate, etc. You might even need to sign a contract or agreement with the supplier before implementing this connector. Please contact the client's application manager to coordinate the connector requirements. |
 
-<p align="center">
-  <img src="https://github.com/Tools4everBV/HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone/blob/main/Logo.png?raw=true">
-</p>
-
-## Table of contents
-
-- [HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone](#helloid-conn-sa-full-entraid-afas-update-phone)
-  - [Table of contents](#table-of-contents)
-  - [Requirements](#requirements)
-  - [Remarks](#remarks)
-  - [Introduction](#introduction)
-      - [Description](#description)
-      - [Endpoints](#endpoints)
-      - [Form Options](#form-options)
-      - [Task Actions](#task-actions)
-  - [Connector Setup](#connector-setup)
-    - [Variable Library - User Defined Variables](#variable-library---user-defined-variables)
-  - [Getting help](#getting-help)
-  - [HelloID docs](#helloid-docs)
-
-## Requirements
-1. **HelloID Environment**:
-   - Set up your _HelloID_ environment.
-2. **Entra ID**:
-   - App registration with `API permissions` of the type `Application`:
-      -  `User.ReadWrite.All`
-   - The following information for the app registration is needed in HelloID:
-      - `Application (client) ID`
-      - `Directory (tenant) ID`
-      - `Secret Value`
-3. **AFAS Profit**:
-   - AFAS tenant id
-   - AppConnector token
-   - Loaded AFAS GetConnector
-     - Tools4ever - HelloID - T4E_HelloID_Users_v2.gcn
-     - https://github.com/Tools4everBV/HelloID-Conn-Prov-Target-AFAS-Profit-Employees
-   - Build-in Profit update connector: KnEmployee
-
-## Remarks
-- None at this time.
-
-## Introduction
-
-#### Description
+## Description
 _HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone_ is a template designed for use with HelloID Service Automation (SA) Delegated Forms. It can be imported into HelloID and customized according to your requirements. 
 
-By using this delegated form, you can update the mobile phone and business phone in Entra ID and AFAS Profit. The following options are available:
- 1. Search and select the Entra ID user
- 2. Enter new values for the following Entra ID account attributes: mobile phone and business phone
- 3. The entered mobile phone and business phone are validated
- 4. Entra ID account [mobile phone and business phone] and AFAS employee [TeNr and MbNr] attributes are updated with new values
- 5. Writing back [TeNr and MbNr] in AFAS will be skipped if the employee is not found in AFAS
+By using this delegated form, you can manage resource attributes across your connected systems. The following options are available:
+ 1. Search and select the resource
+ 2. Enter new values for the resource attributes
+ 3. The entered values are validated
+ 4. Resource attributes are updated with new values across connected systems
+ 5. Writing back values will be handled according to system-specific rules and configurations
 
-#### Endpoints
-Entra Id and AFAS Profit provide a set of REST APIs that allow you to programmatically interact with its data. The API endpoints listed in the table below are used.
+## Getting started
+### Requirements
 
-| Endpoint                      | Description                        |
-| ----------------------------- | ---------------------------------- |
-| users                         | The user endpoint of the Graph API |
-| profitrestservices/connectors | AFAS endpoint                      |
+#### App Registration & Certificate Setup
 
-#### Form Options
-The following options are available in the form:
+Before implementing this connector, make sure to configure a Microsoft Entra ID, an App Registration. During the setup process, you’ll create a new App Registration in the Entra portal, assign the necessary API permissions (such as user and group read/write), and generate and assign a certificate.
 
-1. **Lookup user**:
-   - This Powershell data source runs an Entra ID query to search for matching Entra ID accounts.
-2. **Validate mobile phone and business phone**:
-   - The mobile phone and business phone fields are validated by a RegEx, please change them according to your needs
+Follow the official Microsoft documentation for creating an App Registration and setting up certificate-based authentication:
+- [App-only authentication with certificate (Exchange Online)](https://learn.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps#set-up-app-only-authentication)
 
-#### Task Actions
-The following actions will be performed based on user selections:
+#### HelloID-specific configuration
 
-1. **Update mobile phone and business phone in Entra ID**:
-   - On the Entra ID account the attributes mobile phone and business phone will be updated.
-2. **Update TeNr and MbNr in AFAS Profit Employee**:
-   - On the AFAS employee the attributes TeNr and MbNr will be updated.
+Once you have completed the Microsoft setup and followed their best practices, configure the following HelloID-specific requirements.
 
-## Connector Setup
-### Variable Library - User Defined Variables
-The following user-defined variables are used by the connector. Ensure that you check and set the correct values required to connect to the API.
+- **API Permissions** (Application permissions):
+  - `User.ReadWrite.All`
+  - `Group.ReadWrite.All`
+  - `GroupMember.ReadWrite.All`
+  - `UserAuthenticationMethod.ReadWrite.All`
+  - `User.EnableDisableAccount.All`
+  - `User-PasswordProfile.ReadWrite.All`
+  - `User-Phone.ReadWrite.All`
+  - **Entra ID Role assignment:**
+  - Assign the **Exchange Recipient Administrator** role to the App Registration
+- **Certificate:**
+  - Upload the public key file (.cer) in Entra ID
+  - Provide the certificate as a Base64 string in HelloID. For instructions on creating the certificate and obtaining the base64 string, refer to our forum post: [Setting up a certificate for Microsoft Graph API in HelloID connectors](https://forum.helloid.com/forum/helloid-provisioning/5338-instruction-setting-up-a-certificate-for-microsoft-graph-api-in-helloid-connectors#post5338)
 
-| Setting          | Description                                                     |
-| ---------------- | --------------------------------------------------------------- |
-| `EntraTenantId`  | The ID to the Tenant in Microsoft Entra ID                      |
-| `EntraAppId`     | The ID to the App Registration in Microsoft Entra ID            |
-| `EntraAppSecret` | The Client Secret to the App Registration in Microsoft Entra ID |
-| `AFASBaseUrl`    | The URL to the AFAS environment REST service                    |
-| `AFASToken`      | The password to the P12 certificate of your service account     |
+
+### Connection settings
+
+The following user-defined variables are used by the connector.
+
+| Setting                           | Description                                                            | Mandatory |
+| --------------------------------- | ---------------------------------------------------------------------- | --------- |
+| EntraIdAppId                      | The Application (client) ID of the Entra ID app registration           | Yes       |
+| EntraIdTenantId                   | The Directory (tenant) ID of the Entra ID tenant                       | Yes       |
+| EntraIdCertificateBase64String    | The Base64 encoded certificate string for Entra ID authentication      | Yes       |
+| EntraIdCertificatePassword        | The password for the certificate                                       | Yes       |
+| AFASBaseUrl                       | The base URL to the AFAS Profit REST API                               | Yes       |
+| AFASToken                         | The AppConnector token for AFAS Profit authentication                  | Yes       |
+| companyName                       | The company name (used for display purposes only)                      | No        |
+
+## Remarks
+
+### Certificate-Based Authentication Required
+- **Entra ID Authentication**: This connector uses certificate-based authentication for Microsoft Entra ID instead of client credentials. The certificate must be properly configured in the app registration and provided as a Base64 encoded string with its password.
+
+### AFAS Employee Matching
+- **Employee ID Correlation**: The connector correlates Entra ID users with AFAS employees using the Employee ID field. If no matching AFAS employee is found, the update for AFAS will be skipped, but the Entra ID update will still proceed.
+
+### Phone Number Validation
+- **Pattern Validation**: The form includes RegEx pattern validation for mobile and fixed phone numbers. The default patterns are:
+  - Mobile Phone: `^\\+316\\d{8}$` (format: +31612345678)
+  - Business Phone: `^(088-123)+[0-9]{4}$` (format: 088-123xxxx)
+  
+  These patterns should be adjusted according to your organization's phone number format requirements.
+
+### No Changes Detection
+- **Skip Unnecessary Updates**: The connector checks if the phone numbers in AFAS are already set to the requested values. If no changes are detected, the update operation is skipped to avoid unnecessary API calls and potential errors.
+
+## Development resources
+
+### API endpoints
+
+The following endpoints are used by the connector
+
+| Endpoint                                                | Description                                         |
+| ------------------------------------------------------- | --------------------------------------------------- |
+| https://graph.microsoft.com/v1.0/users/{id}             | Update Entra ID user attributes                     |
+| https://login.microsoftonline.com/{tenant}/oauth2/token | Obtain access token for Microsoft Graph API         |
+| {AFASBaseUrl}/connectors/T4E_HelloID_Users_v2           | Retrieve AFAS employee information                  |
+| {AFASBaseUrl}/connectors/KnEmployee                     | Update AFAS employee phone numbers                  |
+
+### API documentation
+
+- [Microsoft Graph API - Update User](https://learn.microsoft.com/en-us/graph/api/user-update)
+- [AFAS Profit REST API Documentation](https://help.afas.nl/help/NL/SE/App_Cnr_Rest_Updconnectors.htm)
 
 ## Getting help
-> [!TIP]
+> :bulb: **Tip:**  
 > _For more information on Delegated Forms, please refer to our [documentation](https://docs.helloid.com/en/service-automation/delegated-forms.html) pages_.
-
-> [!TIP]
->  _If you need help, feel free to ask questions on our [forum](https://forum.helloid.com)_.
 
 ## HelloID docs
 The official HelloID documentation can be found at: https://docs.helloid.com/

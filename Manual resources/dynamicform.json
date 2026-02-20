@@ -73,17 +73,31 @@
     "label": "Details",
     "fields": [
       {
+        "templateOptions": {
+          "title": "The mobile number entered below will be applied to both the Entra ID user and the AFAS employee.",
+          "titleField": "",
+          "bannerType": "Info",
+          "useBody": false
+        },
+        "type": "textbanner",
+        "summaryVisibility": "Hide element",
+        "body": "Text Banner Content",
+        "requiresTemplateOptions": false,
+        "requiresKey": false,
+        "requiresDataSource": false
+      },
+      {
         "key": "mobilePhone",
         "templateOptions": {
           "label": "Mobile work",
-          "pattern": "^(06-)+[0-9]{8}$",
+          "pattern": "^\\+316\\d{8}$",
           "useDependOn": true,
           "dependOn": "gridUsers",
           "dependOnProperty": "MobilePhone"
         },
         "validation": {
           "messages": {
-            "pattern": "Please fill in the mobile number in the following format: 06-12345678"
+            "pattern": "Please fill in the mobile number in the following format: +31612345678"
           }
         },
         "type": "input",
