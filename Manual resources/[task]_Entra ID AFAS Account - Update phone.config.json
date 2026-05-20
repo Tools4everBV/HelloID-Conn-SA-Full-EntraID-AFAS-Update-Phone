@@ -1,4 +1,4 @@
 {
-  "name": "Entra ID AFAS Account - Update phone",
-  "runInCloud": true
+    "name":  "Entra ID AFAS Account - Update phone",
+    "runInCloud":  true
 }

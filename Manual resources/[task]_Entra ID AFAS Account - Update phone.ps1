@@ -1,15 +1,3 @@
-#######################################################################
-# Template: HelloID SA Delegated form task
-# Name:     EntraID-AFAS-account-update-phone
-# Date:     01-11-2024
-#######################################################################
-
-# For basic information about delegated form tasks see:
-# https://docs.helloid.com/en/service-automation/delegated-forms/delegated-form-powershell-scripts/add-a-powershell-script-to-a-delegated-form.html
-
-# Service automation variables:
-# https://docs.helloid.com/en/service-automation/service-automation-variables/service-automation-variable-reference.html
-
 #region init
 
 # Enable TLS1.2
@@ -19,18 +7,15 @@ $VerbosePreference = "SilentlyContinue"
 $InformationPreference = "Continue"
 $WarningPreference = "Continue"
 
-# global variables (Automation --> Variable libary):
-# $globalVar = $globalVarName
-
 # variables configured in form:
-$userPrincipalName = $form.gridUsers.UserPrincipalName
-$entraidGUID = $form.gridUsers.Id
-$displayname = $form.gridUsers.DisplayName
+$userPrincipalName = $form.gridUsers.userPrincipalName
+$entraidGUID = $form.gridUsers.id
+$displayname = $form.gridUsers.displayName
 $phoneMobile = $form.mobilePhone
-$phoneMobileOld = $form.gridUsers.MobilePhone
+$phoneMobileOld = $form.gridUsers.mobilePhone
 $phoneFixed = $form.businessPhones
-$phoneFixedOld = $form.gridUsers.BusinessPhones
-$employeeID = $form.gridUsers.employeeID
+$phoneFixedOld = $form.gridUsers.businessPhones
+$employeeID = $form.gridUsers.employeeId
 #endregion init
 
 #region Entra ID functions
@@ -74,7 +59,104 @@ function Get-ErrorMessage {
         Write-Output $httpErrorObj
     }
 }
+
+function Get-MSEntraAccessToken {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Certificate
+    )
+    try {
+        # Get the DER encoded bytes of the certificate
+        $derBytes = $Certificate.RawData
+
+        # Compute the SHA-256 hash of the DER encoded bytes
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash($derBytes)
+        $base64Thumbprint = [System.Convert]::ToBase64String($hashBytes).Replace('+', '-').Replace('/', '_').Replace('=', '')
+
+        # Create a JWT (JSON Web Token) header
+        $header = @{
+            'alg'      = 'RS256'
+            'typ'      = 'JWT'
+            'x5t#S256' = $base64Thumbprint
+        } | ConvertTo-Json
+        $base64Header = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($header))
+
+        # Calculate the Unix timestamp (seconds since 1970-01-01T00:00:00Z) for 'exp', 'nbf' and 'iat'
+        $currentUnixTimestamp = [math]::Round(((Get-Date).ToUniversalTime() - ([datetime]'1970-01-01T00:00:00Z').ToUniversalTime()).TotalSeconds)
+
+        # Create a JWT payload
+        $payload = [Ordered]@{
+            'iss' = "$entraidappid"
+            'sub' = "$entraidappid"
+            'aud' = "https://login.microsoftonline.com/$EntraIdTenantId/oauth2/token"
+            'exp' = ($currentUnixTimestamp + 3600) # Expires in 1 hour
+            'nbf' = ($currentUnixTimestamp - 300) # Not before 5 minutes ago
+            'iat' = $currentUnixTimestamp
+            'jti' = [Guid]::NewGuid().ToString()
+        } | ConvertTo-Json
+        $base64Payload = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($payload)).Replace('+', '-').Replace('/', '_').Replace('=', '')
+
+        # Extract the private key from the certificate
+        $rsaPrivate = $Certificate.PrivateKey
+        $rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new()
+        $rsa.ImportParameters($rsaPrivate.ExportParameters($true))
+
+        # Sign the JWT
+        $signatureInput = "$base64Header.$base64Payload"
+        $signature = $rsa.SignData([Text.Encoding]::UTF8.GetBytes($signatureInput), 'SHA256')
+        $base64Signature = [System.Convert]::ToBase64String($signature).Replace('+', '-').Replace('/', '_').Replace('=', '')
+	
+	# Extract the private key from the certificate
+        if (-not $Certificate.HasPrivateKey -or -not $Certificate.PrivateKey) {
+            throw "The certificate does not have a private key."
+        }
+
+        # Create the JWT token
+        $jwtToken = "$($base64Header).$($base64Payload).$($base64Signature)"
+
+        $createEntraAccessTokenBody = @{
+            grant_type            = 'client_credentials'
+            client_id             = $entraidappid
+            client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+            client_assertion      = $jwtToken
+            resource              = 'https://graph.microsoft.com'
+        }
+
+        $createEntraAccessTokenSplatParams = @{
+            Uri         = "https://login.microsoftonline.com/$EntraIdTenantId/oauth2/token"
+            Body        = $createEntraAccessTokenBody
+            Method      = 'POST'
+            ContentType = 'application/x-www-form-urlencoded'
+            Verbose     = $false
+            ErrorAction = 'Stop'
+        }
+
+        $createEntraAccessTokenResponse = Invoke-RestMethod @createEntraAccessTokenSplatParams
+        Write-Output $createEntraAccessTokenResponse.access_token
+    }
+    catch {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+function Get-MSEntraCertificate {
+    [CmdletBinding()]
+    param()
+    try {
+        $rawCertificate = [system.convert]::FromBase64String($EntraIdCertificateBase64String)
+        $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($rawCertificate, $EntraIdCertificatePassword, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
+        Write-Output $certificate
+    }
+    catch {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
 #endregion Entra ID functions
+
+
 
 #region EntraID
 try {
@@ -90,25 +172,17 @@ try {
         $account.businessPhones = @()
     }
 
-    $baseUri = "https://login.microsoftonline.com/"
-    $authUri = $baseUri + "$EntraTenantId/oauth2/token"
-
-    $body = @{
-        grant_type    = "client_credentials"
-        client_id     = "$EntraAppId"
-        client_secret = "$EntraAppSecret"
-        resource      = "https://graph.microsoft.com"
-    }
- 
-    $Response = Invoke-RestMethod -Method POST -Uri $authUri -Body $body -ContentType 'application/x-www-form-urlencoded'
-    $accessToken = $Response.access_token;
- 
+    # Setup Connection with Entra/Exo
+    Write-Verbose 'connecting to MS-Entra'
+    $certificate = Get-MSEntraCertificate
+    $entraToken = Get-MSEntraAccessToken -Certificate $certificate
+    
     #Add the authorization header to the request
     $authorization = @{
-        Authorization  = "Bearer $accesstoken";
+        Authorization = "Bearer $entraToken";
         'Content-Type' = "application/json";
-        Accept         = "application/json";
-    }
+        Accept = "application/json";
+    } 
  
     $baseUpdateUri = "https://graph.microsoft.com/"
     $updateUri = $baseUpdateUri + "v1.0/users/$($entraidGUID)"
@@ -216,7 +290,7 @@ if (-not([string]::IsNullOrEmpty($employeeID))) {
                             'Element' = @{
                                 'Fields' = @{
                                     # # Telefoonnr. werk
-                                    'TeNr' = $phoneFixed                     
+                                    #'TeNr' = $phoneFixed                     
                                     # Mobiel werk
                                     'MbNr' = $phoneMobile
                                 }
@@ -239,6 +313,7 @@ if (-not([string]::IsNullOrEmpty($employeeID))) {
         $encodedToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($Token))
         $authValue = "AfasToken $encodedToken"
         $Headers = @{ Authorization = $authValue }
+        $Headers.Add("IntegrationId", "45963_140664") # Fixed value - Tools4ever Partner Integration ID
 
         $splatWebRequest = @{
             Uri             = $BaseUri + "/connectors/" + $getConnector + "?filterfieldids=$filterfieldid&filtervalues=$filtervalue&operatortypes=1"
