@@ -7,16 +7,15 @@ $VerbosePreference = "SilentlyContinue"
 $InformationPreference = "Continue"
 $WarningPreference = "Continue"
 
-
 # variables configured in form:
-$userPrincipalName = $form.gridUsers.UserPrincipalName
-$entraidGUID = $form.gridUsers.Id
-$displayname = $form.gridUsers.DisplayName
+$userPrincipalName = $form.gridUsers.userPrincipalName
+$entraidGUID = $form.gridUsers.id
+$displayname = $form.gridUsers.displayName
 $phoneMobile = $form.mobilePhone
-$phoneMobileOld = $form.gridUsers.MobilePhone
+$phoneMobileOld = $form.gridUsers.mobilePhone
 $phoneFixed = $form.businessPhones
-$phoneFixedOld = $form.gridUsers.BusinessPhones
-$employeeID = $form.gridUsers.employeeID
+$phoneFixedOld = $form.gridUsers.businessPhones
+$employeeID = $form.gridUsers.employeeId
 #endregion init
 
 #region Entra ID functions
