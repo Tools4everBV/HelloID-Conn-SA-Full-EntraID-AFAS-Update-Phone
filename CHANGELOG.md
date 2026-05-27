@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [2.0.1] - 27-05-2026
+
+### Fixed
+
+- Updated `README.md` to the right permissions.
+
 ## [2.0.0] - 20-05-2026
 
 ### Changed
