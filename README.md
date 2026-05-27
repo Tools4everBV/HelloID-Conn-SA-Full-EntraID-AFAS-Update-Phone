@@ -30,14 +30,7 @@ Once you have completed the Microsoft setup and followed their best practices, c
 
 - **API Permissions** (Application permissions):
   - `User.ReadWrite.All`
-  - `Group.ReadWrite.All`
-  - `GroupMember.ReadWrite.All`
-  - `UserAuthenticationMethod.ReadWrite.All`
-  - `User.EnableDisableAccount.All`
-  - `User-PasswordProfile.ReadWrite.All`
   - `User-Phone.ReadWrite.All`
-  - **Entra ID Role assignment:**
-  - Assign the **Exchange Recipient Administrator** role to the App Registration
 - **Certificate:**
   - Upload the public key file (.cer) in Entra ID
   - Provide the certificate as a Base64 string in HelloID. For instructions on creating the certificate and obtaining the base64 string, refer to our forum post: [Setting up a certificate for Microsoft Graph API in HelloID connectors](https://forum.helloid.com/forum/helloid-provisioning/5338-instruction-setting-up-a-certificate-for-microsoft-graph-api-in-helloid-connectors#post5338)
