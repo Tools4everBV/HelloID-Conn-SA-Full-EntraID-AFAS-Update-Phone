@@ -108,7 +108,7 @@ function Get-MSEntraAccessToken {
         $signature = $rsa.SignData([Text.Encoding]::UTF8.GetBytes($signatureInput), 'SHA256')
         $base64Signature = [System.Convert]::ToBase64String($signature).Replace('+', '-').Replace('/', '_').Replace('=', '')
 	
-	# Extract the private key from the certificate
+        # Extract the private key from the certificate
         if (-not $Certificate.HasPrivateKey -or -not $Certificate.PrivateKey) {
             throw "The certificate does not have a private key."
         }
@@ -179,9 +179,9 @@ try {
     
     #Add the authorization header to the request
     $authorization = @{
-        Authorization = "Bearer $entraToken";
+        Authorization  = "Bearer $entraToken";
         'Content-Type' = "application/json";
-        Accept = "application/json";
+        Accept         = "application/json";
     } 
  
     $baseUpdateUri = "https://graph.microsoft.com/"
@@ -276,7 +276,8 @@ function Resolve-HTTPError {
 # Used to connect to AFAS API endpoints
 if (-not([string]::IsNullOrEmpty($employeeID))) {
     $BaseUri = $AFASBaseUrl
-    $Token = $AFASToken
+    $ClientId = $AFASClientId
+    $ClientSecret = $AFASClientSecret
     $getConnector = "T4E_HelloID_Users_v2"
     $updateConnector = "KnEmployee"
 
@@ -309,10 +310,17 @@ if (-not([string]::IsNullOrEmpty($employeeID))) {
     try {
         Write-Information "Querying AFAS employee with $($filterfieldid) $($filtervalue)"
 
+        # Obtain OAuth access token
+        $tokenUri = "$BaseUri/oauth/token"
+        $tokenRequestBody = @{
+            grant_type    = 'client_credentials'
+            client_id     = $ClientId
+            client_secret = $ClientSecret
+        }
+        $tokenResponse = Invoke-RestMethod -Method Post -Uri $tokenUri -Body $tokenRequestBody -ContentType 'application/x-www-form-urlencoded' -UseBasicParsing
+        
         # Create authorization headers
-        $encodedToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($Token))
-        $authValue = "AfasToken $encodedToken"
-        $Headers = @{ Authorization = $authValue }
+        $Headers = @{ Authorization = "$($tokenResponse.token_type) $($tokenResponse.access_token)" }
         $Headers.Add("IntegrationId", "45963_140664") # Fixed value - Tools4ever Partner Integration ID
 
         $splatWebRequest = @{
