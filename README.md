@@ -1,7 +1,7 @@
 # HelloID-Conn-SA-Full-EntraID-AFAS-Update-Phone
 
-| :information_source: Information |
-| :------------------------------- |
+| :information_source: Information                                                                                                                                                                                                                                                                                                                                                          |
+|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | This repository contains the connector and configuration code only. The implementer is responsible for acquiring the connection details such as username, password, certificate, etc. You might even need to sign a contract or agreement with the supplier before implementing this connector. Please contact the client's application manager to coordinate the connector requirements. |
 
 ## Description
@@ -32,6 +32,19 @@ Once you have completed the Microsoft setup and followed their best practices, c
   - `User.ReadWrite.All`
   - `User-Phone.ReadWrite.All`
 
+#### AFAS setup
+
+Ensure AFAS Profit is configured with:
+
+- AFAS AppConnector configured for OAuth client credentials (OAuth-only)
+- AFAS OAuth credentials:
+  - ClientId
+  - ClientSecret
+- Loaded AFAS GetConnector:
+  - Tools4ever - HelloID - T4E_HelloID_Users_v2.gcn
+  - https://github.com/Tools4everBV/HelloID-Conn-Prov-Target-AFAS-Profit-Employees
+- Built-in Profit update connector: KnEmployee
+
 #### Convert .pfx to base64 string
 
 HelloID requires a base64 string to import the certificate. With the example below, it is possible to create a base64 string:
@@ -50,15 +63,16 @@ $fileContentBytes = [System.IO.File]::ReadAllBytes("$pfxPath")
 
 The following user-defined variables are used by the connector.
 
-| Setting                           | Description                                                            | Mandatory |
-| --------------------------------- | ---------------------------------------------------------------------- | --------- |
-| EntraIdAppId                      | The Application (client) ID of the Entra ID app registration           | Yes       |
-| EntraIdTenantId                   | The Directory (tenant) ID of the Entra ID tenant                       | Yes       |
-| EntraIdCertificateBase64String    | The Base64 encoded certificate string for Entra ID authentication      | Yes       |
-| EntraIdCertificatePassword        | The password for the certificate                                       | Yes       |
-| AFASBaseUrl                       | The base URL to the AFAS Profit REST API                               | Yes       |
-| AFASToken                         | The AppConnector token for AFAS Profit authentication                  | Yes       |
-| companyName                       | The company name (used for display purposes only)                      | No        |
+| Setting                        | Description                                                       | Mandatory |
+|--------------------------------|-------------------------------------------------------------------|-----------|
+| EntraIdAppId                   | The Application (client) ID of the Entra ID app registration      | Yes       |
+| EntraIdTenantId                | The Directory (tenant) ID of the Entra ID tenant                  | Yes       |
+| EntraIdCertificateBase64String | The Base64 encoded certificate string for Entra ID authentication | Yes       |
+| EntraIdCertificatePassword     | The password for the certificate                                  | Yes       |
+| AFASBaseUrl                    | The base URL to the AFAS Profit REST API                          | Yes       |
+| AFASClientId                   | The OAuth ClientId for AFAS Profit authentication                 | Yes       |
+| AFASClientSecret               | The OAuth ClientSecret for AFAS Profit authentication             | Yes       |
+| companyName                    | The company name (used for display purposes only)                 | No        |
 
 ## Remarks
 
@@ -84,12 +98,12 @@ The following user-defined variables are used by the connector.
 
 The following endpoints are used by the connector
 
-| Endpoint                                                | Description                                         |
-| ------------------------------------------------------- | --------------------------------------------------- |
-| https://graph.microsoft.com/v1.0/users/{id}             | Update Entra ID user attributes                     |
-| https://login.microsoftonline.com/{tenant}/oauth2/token | Obtain access token for Microsoft Graph API         |
-| {AFASBaseUrl}/connectors/T4E_HelloID_Users_v2           | Retrieve AFAS employee information                  |
-| {AFASBaseUrl}/connectors/KnEmployee                     | Update AFAS employee phone numbers                  |
+| Endpoint                                                | Description                                 |
+|---------------------------------------------------------|---------------------------------------------|
+| https://graph.microsoft.com/v1.0/users/{id}             | Update Entra ID user attributes             |
+| https://login.microsoftonline.com/{tenant}/oauth2/token | Obtain access token for Microsoft Graph API |
+| {AFASBaseUrl}/connectors/T4E_HelloID_Users_v2           | Retrieve AFAS employee information          |
+| {AFASBaseUrl}/connectors/KnEmployee                     | Update AFAS employee phone numbers          |
 
 ### API documentation
 
